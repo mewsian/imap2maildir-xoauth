@@ -9,6 +9,8 @@ import logging
 import platform
 import re
 import time
+import xoauth
+import random
 
 class __simplebase:
     """ __simple base
@@ -446,7 +448,7 @@ class Server:
     """ Class for instantiating a server instance
     """
 
-    def __init__(self, hostname=None, username=None, password=None, port=None, ssl=True):
+    def __init__(self, hostname=None, username=None, password=None, port=None, ssl=True, oauth_consumer_key=None, oauth_consumer_secret=None):
         """ Constructor
         """
 
@@ -456,6 +458,8 @@ class Server:
         self.__ssl = ssl
         self.__connection = None
         self.__lastnoop = 0
+	self.__oauth_consumer_key = oauth_consumer_key
+	self.__oauth_consumer_secret = oauth_consumer_secret
 
         if port:
             self.__port = port
@@ -464,7 +468,7 @@ class Server:
         else:
             self.__port = 143
 
-        if self.__hostname and self.__username and self.__password:
+        if self.__hostname and self.__username and (self.__password or self.__oauth_consumer_key):
             self.Connect()
 
     def Connect(self):
@@ -476,7 +480,17 @@ class Server:
         else:
             self.__connection = SimpleImap(self.__hostname, self.__port)
 
-        self.__connection.login(self.__username, self.__password)
+	if self.__oauth_consumer_key != None:
+		consumer = xoauth.OAuthEntity(self.__oauth_consumer_key,
+			self.__oauth_consumer_secret)
+		access_token = xoauth.OAuthEntity('','')
+		xoauth_string = xoauth.GenerateXOauthString(
+			consumer, access_token, self.__username, "imap",
+			self.__username, str(random.randrange(2**64 - 1)),
+			str(int(time.time())))
+		self.__connection.authenticate('XOAUTH', lambda x: xoauth_string)
+	else:
+		self.__connection.login(self.__username, self.__password)
 
     def Get(self):
         """ Get

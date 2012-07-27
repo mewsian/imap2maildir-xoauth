@@ -61,6 +61,8 @@ defaults = {
             'type': 'maildir',
             'mboxdash': False,
             'search': 'SEEN',
+            'oauth_consumer_key': None,
+            'oauth_consumer_secret': None,
             }
 
 class SeenMessagesCache(object):
@@ -398,6 +400,10 @@ def parse_options(defaults):
     optional.add_option("--mboxdash", dest="mboxdash", action="store_true",
         help="Use - in the mbox From line instead of sender's address. " +
              "Default: %default")
+    optional.add_option("--oauth_consumer_key", dest="oauth_consumer_key",
+        help="Two legged OAuth domain consumer key")
+    optional.add_option("--oauth_consumer_secret", dest="oauth_consumer_secret",
+        help="Two legged OAuth domain consumer secret")
 
     # Parse
     parser.add_option_group(required)
@@ -419,7 +425,7 @@ def parse_options(defaults):
           and not smells_like_maildir(options.destination)):
         parser.error("Directory '%s' exists, but it isn't a maildir."
                      % options.destination)
-    if not options.password:
+    if not options.password and options.oauth_consumer_key == None:
         options.password = getpass.getpass()
 
     # Set up debugging
@@ -532,7 +538,9 @@ def main():
     # Connect to IMAP server
     imapserver = simpleimap.Server(hostname=options.hostname,
                    username=options.username, password=options.password,
-                   port=options.port, ssl=options.ssl)
+                   port=options.port, ssl=options.ssl,
+                   oauth_consumer_key=options.oauth_consumer_key,
+                   oauth_consumer_secret=options.oauth_consumer_secret)
     imap = imapserver.Get()
 
     # Instantiate a folder
