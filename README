@@ -1,3 +1,16 @@
+About imap2maildir-xoauth:
+
+Google Apps administrators are given a mechanism called two-legged OAuth
+authentication that allows them to access data for their users without knowing
+their users' passwords. In many organizations it's essential to have backups
+of user data for peace of mind, so this fork of imap2maildir allows a XOAuth
+domain key and domain secret to be defined in the imap2maildir.conf file,
+which allows the program to be run as normally but without user password.
+
+This can then be scripted to iterate over all users in the Google Apps domain.
+
+All other usage described below remains the same.
+
 Usage: imap2maildir [options]
 
 A script to copy a remote IMAP folder to a local mail storage area.  Ideal for
@@ -42,6 +55,10 @@ Options:
                         maildir
     --mboxdash          Use - in the mbox From line instead of sender's
                         address. Default: False
+    --oauth_consumer_key=OAUTH_CONSUMER_KEY
+                        Two legged OAuth domain consumer key
+    --oauth_consumer_secret=OAUTH_CONSUMER_SECRET
+                        Two legged OAuth domain consumer secret
 
 COMMAND LINE EXAMPLES
  $ imap2maildir -u bob@yourplace.com -d /home/bob/backups/mail --create
